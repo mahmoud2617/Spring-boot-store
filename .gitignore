@@ -35,3 +35,6 @@ build/
 ### Docker ###
 Dockerfile
 docker-compose.yaml
+
+### application-local.yaml ###
+src/main/resources/application-local.yaml

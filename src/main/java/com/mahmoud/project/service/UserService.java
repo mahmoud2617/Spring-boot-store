@@ -6,6 +6,8 @@ import com.mahmoud.project.dto.UpdateUserRequest;
 import com.mahmoud.project.dto.UserDto;
 import com.mahmoud.project.entity.Profile;
 import com.mahmoud.project.entity.User;
+import com.mahmoud.project.exception.IncorrectPasswordException;
+import com.mahmoud.project.exception.UserNotFoundException;
 import com.mahmoud.project.mapper.UserMapper;
 import com.mahmoud.project.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -40,9 +42,15 @@ public class UserService {
     }
 
     public UserDto getUser(Long id) {
-        return userRepository.findByIdWithProfile(id)
+        UserDto userDto = userRepository.findByIdWithProfile(id)
                 .map(userMapper::toDto)
                 .orElse(null);
+
+        if (userDto == null) {
+            throw new UserNotFoundException();
+        }
+
+        return userDto;
     }
 
     @Transactional
@@ -63,7 +71,7 @@ public class UserService {
         User user = userRepository.findById(id).orElse(null);
 
         if (user == null) {
-            return null;
+            throw new UserNotFoundException();
         }
 
         userMapper.update(userRequest, user);
@@ -73,29 +81,28 @@ public class UserService {
     }
 
     @Transactional
-    public UpdateUserPasswordStatus updateUserPassword(Long id, ChangePasswordRequest passwordequest) {
+    public void updateUserPassword(Long id, ChangePasswordRequest passwordequest) {
         User user = userRepository.findById(id).orElse(null);
 
         if (user == null) {
-            return UpdateUserPasswordStatus.NOT_FOUND;
+            throw new UserNotFoundException();
         }
 
         if (!user.getPassword().equals(passwordequest.getOldPassword())) {
-            return UpdateUserPasswordStatus.INCORRECT_CURRENT_PASSWORD;
+            throw new IncorrectPasswordException();
         }
 
         user.setPassword(passwordequest.getNewPassword());
         userRepository.save(user);
-
-        return UpdateUserPasswordStatus.UPDATED;
     }
 
     @Transactional
     public UserDto patchUser(Long id, UpdateUserRequest userRequest) {
         User user = userRepository.findById(id).orElse(null);
 
-        if (user == null)
-            return null;
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
 
         userMapper.patch(userRequest, user);
         userRepository.save(user);
@@ -103,14 +110,13 @@ public class UserService {
         return userMapper.toDto(user);
     }
 
-    public boolean deleteUser(Long id) {
+    public void deleteUser(Long id) {
         User user = userRepository.findById(id).orElse(null);
 
-        if (user == null)
-            return false;
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
 
         userRepository.delete(user);
-
-        return true;
     }
 }

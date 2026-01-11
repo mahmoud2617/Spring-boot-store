@@ -10,12 +10,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 public class UserDto {
-    @JsonIgnore
-    Long id;
+    private Long id;
 
-    String name;
-    String email;
+    private String name;
+    private String email;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    LocalDateTime createAt;
+    private LocalDateTime createAt;
 }

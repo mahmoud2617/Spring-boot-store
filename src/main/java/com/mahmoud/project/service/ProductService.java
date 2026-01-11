@@ -3,6 +3,8 @@ package com.mahmoud.project.service;
 import com.mahmoud.project.dto.ProductDto;
 import com.mahmoud.project.entity.Category;
 import com.mahmoud.project.entity.Product;
+import com.mahmoud.project.exception.CategoryNotFoundException;
+import com.mahmoud.project.exception.ProductNotFoundException;
 import com.mahmoud.project.mapper.ProductMapper;
 import com.mahmoud.project.repository.CategoryRepository;
 import com.mahmoud.project.repository.ProductRepository;
@@ -19,25 +21,24 @@ public class ProductService {
     ProductMapper productMapper;
     CategoryRepository categoryRepository;
 
-    public List<ProductDto> getAllProducts(String categoryId) {
-        if (isParseableToByte(categoryId)) {
-            return productRepository.findAllByCategoryId(Byte.parseByte(categoryId))
+    public List<ProductDto> getAllProducts(Byte categoryId) {
+        return (categoryId == null)?
+            productRepository.findAll()
+                    .stream()
+                    .map(productMapper::toDto)
+                    .toList() :
+            productRepository.findAllByCategoryId(categoryId)
                     .stream()
                     .map(productMapper::toDto)
                     .toList();
-        }
-
-        return productRepository.findAll()
-                .stream()
-                .map(productMapper::toDto)
-                .toList();
-    }
+}
 
     public ProductDto getProduct(Long id) {
         Product product = productRepository.findById(id).orElse(null);
 
-        if (product == null)
-            return null;
+        if (product == null) {
+            throw new ProductNotFoundException();
+        }
 
         return productMapper.toDto(product);
     }
@@ -46,8 +47,9 @@ public class ProductService {
     public ProductDto createProduct(ProductDto productDto) {
         Category category = categoryRepository.findById(productDto.getCategoryId()).orElse(null);
 
-        if (category == null)
-            return null;
+        if (category == null) {
+            throw new CategoryNotFoundException();
+        }
 
         Product product = productMapper.toEntity(productDto);
         productRepository.save(product);
@@ -59,8 +61,9 @@ public class ProductService {
     public ProductDto updateProduct(Long id, ProductDto productDtoRequest) {
         Product product = productRepository.findById(id).orElse(null);
 
-        if (product == null)
-            return null;
+        if (product == null) {
+            throw new ProductNotFoundException();
+        }
 
         productMapper.update(productDtoRequest, product);
         productRepository.save(product);
@@ -72,8 +75,9 @@ public class ProductService {
     public ProductDto patchProduct(Long id, ProductDto productDtoRequest) {
         Product product = productRepository.findById(id).orElse(null);
 
-        if (product == null)
-            return null;
+        if (product == null) {
+            throw new ProductNotFoundException();
+        }
 
         productMapper.patch(productDtoRequest, product);
         productRepository.save(product);
@@ -81,23 +85,13 @@ public class ProductService {
         return productMapper.toDto(product);
     }
 
-    public boolean deleteProduct(Long id) {
+    public void deleteProduct(Long id) {
         Product product = productRepository.findById(id).orElse(null);
 
-        if (product == null)
-            return false;
+        if (product == null) {
+            throw new ProductNotFoundException();
+        }
 
         productRepository.delete(product);
-
-        return true;
-    }
-
-    private static boolean isParseableToByte(String s) {
-        try {
-            Byte.parseByte(s);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
     }
 }

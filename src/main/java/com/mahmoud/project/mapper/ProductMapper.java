@@ -1,5 +1,6 @@
 package com.mahmoud.project.mapper;
 
+import com.mahmoud.project.dto.CartProductDto;
 import com.mahmoud.project.dto.ProductDto;
 import com.mahmoud.project.entity.Product;
 import org.mapstruct.*;
@@ -11,6 +12,8 @@ public interface ProductMapper {
 
     @Mapping(source = "categoryId", target = "category.id")
     Product toEntity(ProductDto productDto);
+
+    CartProductDto toCartProductDto(Product product);
 
     @Mapping(source = "categoryId", target = "category.id")
     void update(ProductDto productDtoRequest, @MappingTarget Product product);

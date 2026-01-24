@@ -5,6 +5,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,5 +25,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
             SELECT u FROM User u
             JOIN FETCH u.profile
             WHERE u.id = :id""")
-    Optional<User> findByIdWithProfile(Long id);
+    Optional<User> findByIdWithProfile(@Param("id") Long id);
+
+    @Query("""
+            SELECT u FROM User u
+            WHERE u.email = :email""")
+    Optional<User> findByEmail(@Param("email") String email);
 }

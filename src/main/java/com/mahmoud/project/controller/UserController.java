@@ -1,9 +1,6 @@
 package com.mahmoud.project.controller;
 
-import com.mahmoud.project.dto.ChangePasswordRequest;
-import com.mahmoud.project.dto.RegisterUserRequest;
-import com.mahmoud.project.dto.UpdateUserRequest;
-import com.mahmoud.project.dto.UserDto;
+import com.mahmoud.project.dto.*;
 import com.mahmoud.project.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,11 +33,11 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDto> createUser(
+    public ResponseEntity<UserDto> registerUser(
             @Valid @RequestBody RegisterUserRequest registerUserRequest,
             UriComponentsBuilder uriBuilder
     ) {
-        UserDto userDto = userService.addUserWithProfile(registerUserRequest);
+        UserDto userDto = userService.registerUserWithProfile(registerUserRequest);
         var uri = uriBuilder.path("/users/{id}")
                 .buildAndExpand(userDto.getId()).toUri();
 

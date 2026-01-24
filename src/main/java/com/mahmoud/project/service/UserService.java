@@ -1,10 +1,8 @@
 package com.mahmoud.project.service;
 
-import com.mahmoud.project.dto.ChangePasswordRequest;
-import com.mahmoud.project.dto.RegisterUserRequest;
-import com.mahmoud.project.dto.UpdateUserRequest;
-import com.mahmoud.project.dto.UserDto;
+import com.mahmoud.project.dto.*;
 import com.mahmoud.project.entity.Profile;
+import com.mahmoud.project.entity.Role;
 import com.mahmoud.project.entity.User;
 import com.mahmoud.project.exception.IncorrectPasswordException;
 import com.mahmoud.project.exception.UserNotFoundException;
@@ -13,16 +11,22 @@ import com.mahmoud.project.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 @Service
 @AllArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
     UserRepository userRepository;
     UserMapper userMapper;
+    PasswordEncoder passwordEncoder;
 
     public List<UserDto> getAllUsers(String sort) {
         if (sort.isEmpty()) {
@@ -42,25 +46,21 @@ public class UserService {
     }
 
     public UserDto getUser(Long id) {
-        UserDto userDto = userRepository.findByIdWithProfile(id)
+        return userRepository.findByIdWithProfile(id)
                 .map(userMapper::toDto)
-                .orElse(null);
-
-        if (userDto == null) {
-            throw new UserNotFoundException();
-        }
-
-        return userDto;
+                .orElseThrow(UserNotFoundException::new);
     }
 
     @Transactional
-    public UserDto addUserWithProfile(RegisterUserRequest registerUserRequest) {
+    public UserDto registerUserWithProfile(RegisterUserRequest registerUserRequest) {
         Profile profile = new Profile();
 
         User user = userMapper.toEntity(registerUserRequest);
 
         profile.setUser(user);
         user.setProfile(profile);
+        user.setPassword(passwordEncoder.encode(registerUserRequest.getPassword()));
+        user.setRole(Role.USER);
         userRepository.save(user);
 
         return userMapper.toDto(user);
@@ -68,11 +68,7 @@ public class UserService {
 
     @Transactional
     public UserDto updateUser(Long id, UpdateUserRequest userRequest) {
-        User user = userRepository.findById(id).orElse(null);
-
-        if (user == null) {
-            throw new UserNotFoundException();
-        }
+        User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
 
         userMapper.update(userRequest, user);
         userRepository.save(user);
@@ -81,28 +77,20 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUserPassword(Long id, ChangePasswordRequest passwordequest) {
-        User user = userRepository.findById(id).orElse(null);
+    public void updateUserPassword(Long id, ChangePasswordRequest passwordRequest) {
+        User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
 
-        if (user == null) {
-            throw new UserNotFoundException();
-        }
-
-        if (!user.getPassword().equals(passwordequest.getOldPassword())) {
+        if (!passwordEncoder.matches(passwordRequest.getOldPassword(), user.getPassword())) {
             throw new IncorrectPasswordException();
         }
 
-        user.setPassword(passwordequest.getNewPassword());
+        user.setPassword(passwordEncoder.encode(passwordRequest.getNewPassword()));
         userRepository.save(user);
     }
 
     @Transactional
     public UserDto patchUser(Long id, UpdateUserRequest userRequest) {
-        User user = userRepository.findById(id).orElse(null);
-
-        if (user == null) {
-            throw new UserNotFoundException();
-        }
+        User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
 
         userMapper.patch(userRequest, user);
         userRepository.save(user);
@@ -111,12 +99,20 @@ public class UserService {
     }
 
     public void deleteUser(Long id) {
-        User user = userRepository.findById(id).orElse(null);
-
-        if (user == null) {
-            throw new UserNotFoundException();
-        }
+        User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
 
         userRepository.delete(user);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new UsernameNotFoundException("User not found"));
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                Collections.emptyList()
+        );
     }
 }

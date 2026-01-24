@@ -2,6 +2,7 @@ package com.mahmoud.project.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -61,6 +62,22 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IncorrectPasswordException.class)
     public ResponseEntity<ApiError> handleIncorrectPassword() {
         return badRequest("Incorrect current password.");
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Void> handleBadCredentialsException() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    @ExceptionHandler(UserUnauthorizedException.class)
+    public ResponseEntity<ApiError> handleUserUnauthorized() {
+        ApiError apiError = new ApiError(
+                HttpStatus.UNAUTHORIZED.value(),
+                "Unauthorized user.",
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(401).body(apiError);
     }
 
     private ResponseEntity<ApiError> notFound(String message) {

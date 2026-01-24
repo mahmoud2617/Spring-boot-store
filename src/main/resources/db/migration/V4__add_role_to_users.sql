@@ -1,0 +1,2 @@
+ALTER TABLE practice_schema.users
+ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'USER';

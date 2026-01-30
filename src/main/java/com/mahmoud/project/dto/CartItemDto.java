@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Getter
 public class CartItemDto {
-    private CartProductDto cartProductDto;
+    private CartProductDto item;
     private Integer quantity;
     private BigDecimal totalPrice;
 }

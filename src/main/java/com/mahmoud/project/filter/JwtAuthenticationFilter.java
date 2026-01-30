@@ -1,6 +1,5 @@
 package com.mahmoud.project.filter;
 
-import com.mahmoud.project.service.Jwt;
 import com.mahmoud.project.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

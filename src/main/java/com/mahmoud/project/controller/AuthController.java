@@ -5,9 +5,9 @@ import com.mahmoud.project.dto.JwtResponse;
 import com.mahmoud.project.dto.UserDto;
 import com.mahmoud.project.dto.UserLoginRequest;
 import com.mahmoud.project.entity.User;
-import com.mahmoud.project.exception.UserNotFoundException;
 import com.mahmoud.project.mapper.UserMapper;
 import com.mahmoud.project.repository.UserRepository;
+import com.mahmoud.project.service.AuthService;
 import com.mahmoud.project.service.Jwt;
 import com.mahmoud.project.service.JwtService;
 import jakarta.servlet.http.Cookie;
@@ -18,8 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,6 +29,7 @@ public class AuthController {
     private final JwtConfig jwtConfig;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(
@@ -76,10 +75,7 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<UserDto> me() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = (Long) authentication.getPrincipal();
-
-        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        User user = authService.getCurrentUser();
 
         UserDto userDto = userMapper.toDto(user);
 

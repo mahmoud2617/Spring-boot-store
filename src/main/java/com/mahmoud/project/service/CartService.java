@@ -12,9 +12,9 @@ import com.mahmoud.project.exception.ProductNotFoundException;
 import com.mahmoud.project.mapper.CartMapper;
 import com.mahmoud.project.repository.CartRepository;
 import com.mahmoud.project.repository.ProductRepository;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 

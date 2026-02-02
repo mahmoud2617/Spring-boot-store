@@ -1,4 +1,4 @@
-package com.mahmoud.project.dto;
+package com.mahmoud.project.payments;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

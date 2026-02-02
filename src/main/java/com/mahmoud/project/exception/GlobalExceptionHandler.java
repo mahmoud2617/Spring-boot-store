@@ -99,6 +99,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(401).body(apiError);
     }
 
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<ApiError> handlePaymentException(PaymentException ex) {
+        String message = "Error creating a checkout session.";
+
+        if (ex.messageModified()) {
+            message = ex.getMessage();
+        }
+
+        ApiError apiError = new ApiError(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                message,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiError);
+    }
+
     private ResponseEntity<ApiError> notFound(String message) {
         ApiError error = new ApiError(
                 HttpStatus.NOT_FOUND.value(),

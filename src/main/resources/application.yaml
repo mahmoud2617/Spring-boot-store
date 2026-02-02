@@ -2,10 +2,10 @@ spring:
   application:
     name: project
 
+  profiles:
+    active: dev
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/mydb
-    username: mahmoud
-    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   flyway:
@@ -13,14 +13,9 @@ spring:
     locations: classpath:db/migration
 
   jpa:
-    hibernate:
-      ddl-auto: none
-
     properties:
       hibernate:
         default_schema: practice_schema
-
-    show-sql: true
 
   jwt:
     secret: ${JWT_SECRET}
@@ -34,5 +29,3 @@ spring:
 stripe:
   secretKey: ${STRIPE_SECRET_KEY}
   webhookSecretKey: ${STRIPE_WEBHOOK_SECRET_KEY}
-
-websiteUrl: http://localhost:3000
